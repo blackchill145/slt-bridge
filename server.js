@@ -22,7 +22,7 @@ const MIME_TYPES = {
   '.wasm': 'application/wasm'
 };
 
-const server = http.createServer((req, res) => {
+function handleRequest(req, res) {
   // 1. Handle Real-Time Session Sync APIs
   if (req.url.startsWith('/api/session')) {
     // Enable CORS for API routes
@@ -187,12 +187,18 @@ const server = http.createServer((req, res) => {
       }
     });
   });
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(`  SLT Bridge Server is running!`);
-  console.log(`  Local URL:  http://localhost:${PORT}`);
-  console.log(`==================================================`);
-  console.log(`Press Ctrl+C to stop.`);
-});
+module.exports = handleRequest;
+
+if (require.main === module) {
+  const server = http.createServer(handleRequest);
+  server.listen(PORT, () => {
+    console.log(`==================================================`);
+    console.log(`  SLT Bridge Server is running!`);
+    console.log(`  Local URL:  http://localhost:${PORT}`);
+    console.log(`==================================================`);
+    console.log(`Press Ctrl+C to stop.`);
+  });
+}
+
