@@ -140,13 +140,9 @@ const server = http.createServer((req, res) => {
   let filePath = req.url === '/' ? '/index.html' : req.url;
   filePath = filePath.split('?')[0];
 
-  const fullPath = path.join(__dirname, filePath);
-
-  // Security check: ensure path is within directory
-  if (!fullPath.startsWith(__dirname)) {
-    res.statusCode = 403;
-    res.end('Access Denied');
-    return;
+  let fullPath = path.join(__dirname, filePath);
+  if (!fs.existsSync(fullPath)) {
+    fullPath = path.join(process.cwd(), filePath);
   }
 
   fs.stat(fullPath, (err, stats) => {
@@ -155,7 +151,10 @@ const server = http.createServer((req, res) => {
       // and request does not have an extension (navigation)
       const ext = path.extname(filePath);
       if (!ext) {
-        const indexPath = path.join(__dirname, 'index.html');
+        let indexPath = path.join(__dirname, 'index.html');
+        if (!fs.existsSync(indexPath)) {
+          indexPath = path.join(process.cwd(), 'index.html');
+        }
         fs.readFile(indexPath, (indexErr, content) => {
           if (indexErr) {
             res.statusCode = 500;
