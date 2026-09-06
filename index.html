@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLT Bridge | GSL & Healthcare Sign Language Translator</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="SLT Bridge: A real-time Ghanaian Sign Language (GSL) translator application with a specialized Healthcare Mode, designed to bridge communication barriers in clinical and daily settings. Developed for KNUST College of Science.">
+  <meta name="keywords" content="Ghanaian Sign Language, GSL, Sign Language Translator, Healthcare, AI, MediaPipe, KNUST, Computer Science, Deaf Accessibility">
+  
+  <!-- Fonts and Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  
+  <!-- Styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Dynamic Background Gradients -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- ==========================================================================
+       SESSION LOGIN OVERLAY (Flow Talk Aligned)
+       ========================================================================== -->
+  <div class="session-overlay" id="session-overlay">
+    <div class="session-card glass-card">
+      <div class="session-logo">
+        <span class="material-symbols-rounded logo-glow">waves</span>
+        <h2>SLT Bridge</h2>
+        <p>GSL Interpretation Hub</p>
+      </div>
+
+      <div class="session-form">
+        <h3>Join Session</h3>
+        <p class="form-desc text-muted">Enter your details to start interpreting</p>
+
+        <!-- Name Input -->
+        <div class="form-group-login">
+          <label for="login-name">Name</label>
+          <input type="text" id="login-name" placeholder="Your name" required>
+        </div>
+
+        <!-- Role Selector Cards -->
+        <label class="form-label-role">Role</label>
+        <div class="role-selector-cards">
+          <!-- Signer Card -->
+          <div class="role-card active" data-role="signer" id="role-card-signer">
+            <div class="role-icon-wrapper signer">
+              <span class="material-symbols-rounded">back_hand</span>
+            </div>
+            <div class="role-card-info">
+              <h4>Signer</h4>
+              <p>Sign language user</p>
+            </div>
+          </div>
+
+          <!-- Viewer Card -->
+          <div class="role-card" data-role="viewer" id="role-card-viewer">
+            <div class="role-icon-wrapper viewer">
+              <span class="material-symbols-rounded">visibility</span>
+            </div>
+            <div class="role-card-info">
+              <h4>Viewer</h4>
+              <p>Watch translations</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button for Signer -->
+        <button class="btn btn-primary btn-block" id="btn-create-session">
+          <span class="material-symbols-rounded">add_circle</span> Create New Session
+        </button>
+
+        <!-- Divider -->
+        <div class="session-divider">
+          <span>OR JOIN EXISTING</span>
+        </div>
+
+        <!-- Join existing input -->
+        <div class="join-existing-group">
+          <input type="text" id="login-session-id" placeholder="Session ID (e.g. SLT-1234)">
+          <button class="btn btn-secondary" id="btn-join-session">Join</button>
+        </div>
+
+        <!-- Skip to local offline mode -->
+        <div class="session-skip-btn-wrapper">
+          <button class="btn-skip" id="btn-skip-session">
+            <span class="material-symbols-rounded">wifi_off</span> Skip & Use Local Mode (Offline)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="app-container hidden" id="main-app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <span class="material-symbols-rounded">waves</span>
+        </div>
+        <div class="logo-text">
+          <h1>SLT Bridge</h1>
+          <span id="sidebar-role-badge">Signer Mode</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-target="dashboard" id="nav-dashboard">
+          <span class="material-symbols-rounded">dashboard</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-target="translator" id="nav-translator">
+          <span class="material-symbols-rounded">translate</span>
+          <span>Translator</span>
+        </button>
+        <button class="nav-btn" data-target="healthcare-board" id="nav-healthcare">
+          <span class="material-symbols-rounded">clinical_notes</span>
+          <span>Healthcare Board</span>
+        </button>
+        <button class="nav-btn" data-target="dictionary" id="nav-dictionary">
+          <span class="material-symbols-rounded">menu_book</span>
+          <span>GSL Dictionary</span>
+        </button>
+        <button class="nav-btn" data-target="history" id="nav-history">
+          <span class="material-symbols-rounded">history</span>
+          <span>History</span>
+        </button>
+        <button class="nav-btn" data-target="settings" id="nav-settings">
+          <span class="material-symbols-rounded">settings</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="institution-logo">
+          <span class="material-symbols-rounded">school</span>
+        </div>
+        <div class="institution-details">
+          <p class="inst-college">College of Science</p>
+          <p class="inst-dept">Computer Science, KNUST</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      
+      <!-- Top header bar -->
+      <header class="content-header">
+        <div class="header-left">
+          <h2 id="section-title">Dashboard</h2>
+          <p id="section-subtitle" class="text-muted">Welcome to SLT Bridge, an accessibility tool for Ghanaian Sign Language.</p>
+        </div>
+        <div class="header-right">
+          <!-- Session Badge -->
+          <div class="session-id-display-badge" id="session-code-badge">
+            <span class="material-symbols-rounded">link</span>
+            <span class="code" id="session-code-text">LOCAL MODE</span>
+          </div>
+          <!-- Status Indicators -->
+          <div class="status-indicator ready" id="camera-status-indicator">
+            <span class="dot"></span>
+            <span class="text">System Ready</span>
+          </div>
+          <button class="theme-toggle-btn" id="theme-toggle" title="Toggle theme">
+            <span class="material-symbols-rounded">light_mode</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        
+        <!-- SECTION 1: DASHBOARD -->
+        <section class="content-section active" id="sect-dashboard">
+          <div class="dashboard-welcome-card">
+            <div class="welcome-content">
+              <h3>Empowering Deaf Voices Through Technology</h3>
+              <p>SLT Bridge translates Ghanaian Sign Language (GSL) into text and speech in real-time, helping bridge communication gaps in hospitals, schools, and public environments.</p>
+              <button class="btn btn-primary start-translating-btn" onclick="document.getElementById('nav-translator').click()">
+                <span class="material-symbols-rounded">videocam</span>
+                Start Real-Time Translation
+              </button>
+            </div>
+            <div class="welcome-artwork">
+              <span class="material-symbols-rounded hero-art-icon">interpreter_mode</span>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <!-- Quick Features -->
+            <div class="feature-card glass-card clickable" onclick="document.getElementById('nav-translator').click()">
+              <div class="card-icon gradient-orange">
+                <span class="material-symbols-rounded">translate</span>
+              </div>
+              <div class="card-info">
+                <h4>GSL Live Translation</h4>
+                <p>Use your camera to translate GSL manual alphabet and phrases to spoken audio instantly.</p>
+              </div>
+            </div>
+
+            <div class="feature-card glass-card clickable" onclick="document.getElementById('nav-healthcare').click()">
+              <div class="card-icon gradient-teal">
+                <span class="material-symbols-rounded">emergency</span>
+              </div>
+              <div class="card-info">
+                <h4>Healthcare Assistance</h4>
+                <p>Specially curated presets and translator modes based on the SignTalk-GH medical database.</p>
+              </div>
+            </div>
+
+            <div class="feature-card glass-card clickable" onclick="document.getElementById('nav-dictionary').click()">
+              <div class="card-icon gradient-blue">
+                <span class="material-symbols-rounded">menu_book</span>
+              </div>
+              <div class="card-info">
+                <h4>Interactive Dictionary</h4>
+                <p>Browse over 20+ GSL alphabet and word configurations with hand shape tracking guides.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Project Context -->
+          <div class="project-context-card glass-card">
+            <h3>Project Significance & Data Sources</h3>
+            <p>This project is proposed under the Department of Computer Science, KNUST, to support digital inclusion. It draws inspiration and metadata models from open datasets focused on West African accessibility:</p>
+            <div class="dataset-sources">
+              <div class="source-item">
+                <span class="material-symbols-rounded text-indigo">database</span>
+                <div>
+                  <strong>Ghanaian Sign Language Lexicon</strong>
+                  <p class="text-muted text-sm">Compiled by the HANDS! Lab for Sign Languages and Deaf Studies at Leiden University, recorded by Marco Nyarko (GSL Teacher, University of Ghana).</p>
+                </div>
+              </div>
+              <div class="source-item">
+                <span class="material-symbols-rounded text-teal">medical_services</span>
+                <div>
+                  <strong>SignTalk-GH (Ghanaian Medical Sign Language)</strong>
+                  <p class="text-muted text-sm">Created by the Responsible AI Lab, mapping 10,000+ GhSL videos to clinical interactions across pediatrics, pharmacy, and consultations.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: TRANSLATOR -->
+        <section class="content-section" id="sect-translator">
+          
+          <!-- WORKSPACE A: SIGNER VIEW (Normal Camera View) -->
+          <div class="translator-container" id="signer-workspace">
+            <!-- Left Side: Camera Input -->
+            <div class="translator-input-panel glass-card">
+              <div class="panel-header">
+                <span class="panel-title-text">
+                  <span class="material-symbols-rounded">videocam</span> Live Gesture Stream
+                </span>
+                <div class="panel-options">
+                  <div class="toggle-container">
+                    <span class="toggle-label text-sm text-muted">Healthcare Mode</span>
+                    <label class="switch">
+                      <input type="checkbox" id="healthcare-mode-toggle">
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="camera-stream-wrapper">
+                <div class="camera-placeholder" id="camera-placeholder">
+                  <span class="material-symbols-rounded placeholder-icon">photo_camera_back</span>
+                  <p>Camera is disabled. Turn it on to start tracking.</p>
+                  <button class="btn btn-primary" id="btn-start-camera">
+                    <span class="material-symbols-rounded">videocam</span> Enable Camera
+                  </button>
+                </div>
+                <video id="webcam" autoplay playsinline muted class="hidden"></video>
+                <canvas id="output_canvas" class="hidden"></canvas>
+                <div class="gesture-overlay-hud hidden" id="gesture-hud">
+                  <div class="hud-item" id="hud-fps">FPS: --</div>
+                  <div class="hud-item" id="hud-hand">Hand: None</div>
+                  <div class="hud-item" id="hud-status">Status: Loading model...</div>
+                </div>
+              </div>
+
+              <div class="camera-controls">
+                <button class="btn btn-danger hidden" id="btn-stop-camera">
+                  <span class="material-symbols-rounded">videocam_off</span> Stop Camera
+                </button>
+                <div class="overlay-opacity-control">
+                  <label for="overlay-opacity" class="text-sm text-muted">Overlay Color:</label>
+                  <select id="overlay-color-select" class="form-select text-sm">
+                    <option value="cyan">Cyan Glow</option>
+                    <option value="purple">Purple Aura</option>
+                    <option value="emerald">Emerald Safety</option>
+                    <option value="orange">Warning Gold</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Outputs -->
+            <div class="translator-output-panel glass-card">
+              <div class="panel-header">
+                <span class="panel-title-text">
+                  <span class="material-symbols-rounded">forum</span> Real-Time Translation
+                </span>
+                <span class="mode-badge" id="translator-mode-badge">Conversational Mode</span>
+              </div>
+
+              <div class="output-display-container">
+                <!-- Current Letter/Word Detected -->
+                <div class="active-detection-box">
+                  <span class="label text-muted text-xs">Current Gesture:</span>
+                  <div class="current-prediction" id="current-gesture-text">Waiting for Hand...</div>
+                  <div class="prediction-confidence">
+                    <span class="bar" id="confidence-bar" style="width: 0%"></span>
+                  </div>
+                </div>
+
+                <!-- Complete Sentence Output -->
+                <div class="translation-result-box">
+                  <span class="label text-muted text-xs">Translated Text:</span>
+                  <textarea id="translated-sentence" class="sentence-textarea" placeholder="Formed translation phrases will appear here as you hold gestures..."></textarea>
+                </div>
+              </div>
+
+              <div class="output-actions">
+                <button class="btn btn-secondary" id="btn-speak" title="Speak translation aloud">
+                  <span class="material-symbols-rounded">volume_up</span> Speak
+                </button>
+                <button class="btn btn-secondary" id="btn-copy" title="Copy text to clipboard">
+                  <span class="material-symbols-rounded">content_copy</span> Copy
+                </button>
+                <button class="btn btn-secondary" id="btn-clear-sentence" title="Clear text">
+                  <span class="material-symbols-rounded">delete_sweep</span> Clear
+                </button>
+                <button class="btn btn-primary" id="btn-save-history" title="Save to History">
+                  <span class="material-symbols-rounded">bookmark</span> Save
+                </button>
+              </div>
+
+              <!-- Quick Hints -->
+              <div class="translator-tips-box">
+                <h5>Tips for Good Tracking:</h5>
+                <ul>
+                  <li>Ensure your hand is fully in frame and well lit.</li>
+                  <li>Hold gestures for <strong>1-2 seconds</strong> to lock them in.</li>
+                  <li>Enable <strong>Healthcare Mode</strong> for medical vocabulary like <em>Doctor</em>, <em>Fever</em>, or <em>Pain</em>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- WORKSPACE B: VIEWER VIEW (Live Sync View - No Camera Needed) -->
+          <div class="viewer-workspace-container hidden" id="viewer-workspace">
+            <div class="viewer-layout-grid">
+              
+              <!-- Giant Live Subtitle Card -->
+              <div class="viewer-live-subtitle-card glass-card">
+                <div class="panel-header">
+                  <span class="panel-title-text">
+                    <span class="material-symbols-rounded text-indigo pulse-animation">live_tv</span> Live Translation Stream
+                  </span>
+                  <span class="session-connection-indicator" id="viewer-connection-status">
+                    <span class="dot"></span> Connected
+                  </span>
+                </div>
+
+                <div class="viewer-live-text-display">
+                  <p class="signer-name-banner" id="viewer-signer-banner">SIGNER IS THINKING...</p>
+                  <h3 class="viewer-subtitle-text" id="viewer-live-text">Waiting for translation to begin...</h3>
+                </div>
+
+                <div class="viewer-controls">
+                  <button class="btn btn-primary" id="btn-viewer-speak-last">
+                    <span class="material-symbols-rounded">volume_up</span> Replay Speech
+                  </button>
+                  <div class="checkbox-container">
+                    <label class="checkbox-label text-sm">
+                      <input type="checkbox" id="setting-viewer-autospeak" checked>
+                      <span class="label-text">Auto-Speak incoming translations</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Session Details and Transcript Log -->
+              <div class="viewer-sidebar-panel glass-card">
+                <h3>Session Details</h3>
+                
+                <div class="session-details-list">
+                  <div class="detail-row">
+                    <span class="label text-muted">Session Code:</span>
+                    <strong id="viewer-session-id-display">SLT-XXXX</strong>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label text-muted">Sign Language User:</span>
+                    <strong id="viewer-signer-name-display">Ama</strong>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label text-muted">Audience (Viewers):</span>
+                    <span class="badge badge-teal" id="viewer-count-badge">1 Connected</span>
+                  </div>
+                </div>
+
+                <div class="viewer-transcript-log-box">
+                  <h4>Session Transcript Log</h4>
+                  <div class="transcript-log-list" id="viewer-transcript-list">
+                    <!-- Added dynamically -->
+                    <div class="empty-transcript-state" id="empty-transcript-placeholder">
+                      <span class="material-symbols-rounded">receipt_long</span>
+                      <p>The translation log is currently empty.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn btn-danger btn-block" id="btn-leave-session">
+                  <span class="material-symbols-rounded">logout</span> Leave Interpretation Session
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+        <!-- SECTION 3: HEALTHCARE BOARD -->
+        <section class="content-section" id="sect-healthcare-board">
+          <div class="healthcare-dashboard-intro glass-card">
+            <div class="intro-left">
+              <span class="material-symbols-rounded intro-icon">medical_information</span>
+              <div>
+                <h3>SignTalk-GH Interactive Communication Board</h3>
+                <p>Designed for hospitals and consultations. Select a medical category below to display key preset phrases. Click a phrase to read it aloud or click "Learn" to see the sign gesture structure.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="healthcare-board-container">
+            <!-- Left Side: Category Navigator -->
+            <div class="medical-categories-list glass-card">
+              <h4>Consultation Topics</h4>
+              <div class="category-buttons" id="medical-category-container">
+                <button class="med-cat-btn active" data-category="general">
+                  <span class="material-symbols-rounded">stethoscope</span> General Consultation
+                </button>
+                <button class="med-cat-btn" data-category="symptoms">
+                  <span class="material-symbols-rounded">personal_injury</span> Symptom/Pain Reporting
+                </button>
+                <button class="med-cat-btn" data-category="pediatrics">
+                  <span class="material-symbols-rounded">child_care</span> Pediatrics & Children
+                </button>
+                <button class="med-cat-btn" data-category="pharmacy">
+                  <span class="material-symbols-rounded">prescriptions</span> Pharmacy & Medication
+                </button>
+                <button class="med-cat-btn" data-category="emergency">
+                  <span class="material-symbols-rounded">emergency_home</span> Emergency Services
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Side: Phrase Grid -->
+            <div class="medical-phrases-panel glass-card">
+              <h4 id="med-category-title">General Consultation Phrases</h4>
+              <p class="panel-desc text-muted text-sm">Common phrases used during a doctor visit. Click any phrase to play its speech output.</p>
+              
+              <div class="phrases-grid" id="medical-phrases-grid">
+                <!-- Rendered dynamically by app.js -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: GSL DICTIONARY -->
+        <section class="content-section" id="sect-dictionary">
+          <div class="dictionary-header-controls glass-card">
+            <div class="search-box-wrapper">
+              <span class="material-symbols-rounded search-icon">search</span>
+              <input type="text" id="dictionary-search-input" placeholder="Search GSL alphabet and phrases (e.g. Hello, Doctor, Pain, A, B...)...">
+            </div>
+            
+            <div class="dictionary-filter-tabs" id="dictionary-filter-tabs">
+              <button class="filter-tab active" data-filter="all">All Signs</button>
+              <button class="filter-tab" data-filter="alphabet">Alphabet</button>
+              <button class="filter-tab" data-filter="conversational">Conversational</button>
+              <button class="filter-tab" data-filter="medical">Medical / Healthcare</button>
+            </div>
+          </div>
+
+          <div class="dictionary-grid" id="dictionary-cards-grid">
+            <!-- Rendered dynamically by app.js -->
+          </div>
+
+          <!-- Dictionary Detail Modal -->
+          <div class="modal hidden" id="dictionary-detail-modal">
+            <div class="modal-backdrop" onclick="document.getElementById('dictionary-detail-modal').classList.add('hidden')"></div>
+            <div class="modal-content glass-card">
+              <div class="modal-header">
+                <h3 id="modal-sign-title">Sign Title</h3>
+                <button class="modal-close-btn" onclick="document.getElementById('dictionary-detail-modal').classList.add('hidden')">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="modal-sign-demo">
+                  <div class="hand-skeleton-drawing-box" id="modal-skeleton-canvas-wrapper">
+                    <!-- A beautiful canvas displaying the static reference geometry of the hand sign -->
+                    <canvas id="modal-reference-canvas" width="200" height="200"></canvas>
+                  </div>
+                  <div class="modal-sign-description">
+                    <span class="badge" id="modal-sign-category">Category</span>
+                    <h4>How to perform:</h4>
+                    <p id="modal-sign-instruction">Instructions for performing the hand gesture go here.</p>
+                    
+                    <div class="landmark-indicators">
+                      <h5>Finger Configuration:</h5>
+                      <ul id="modal-finger-indicators-list">
+                        <!-- Populated by app.js -->
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-btn-speak">
+                  <span class="material-symbols-rounded">volume_up</span> Play Pronunciation
+                </button>
+                <button class="btn btn-primary" id="modal-btn-try" onclick="document.getElementById('dictionary-detail-modal').classList.add('hidden'); document.getElementById('nav-translator').click()">
+                  <span class="material-symbols-rounded">videocam</span> Try Live
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: TRANSLATION HISTORY -->
+        <section class="content-section" id="sect-history">
+          <div class="history-controls-panel glass-card">
+            <div class="panel-left">
+              <h3>Saved Translations</h3>
+              <p class="text-muted text-sm">Manage and replay your translation logs from this session.</p>
+            </div>
+            <div class="panel-right">
+              <button class="btn btn-danger" id="btn-clear-history-all">
+                <span class="material-symbols-rounded">delete_forever</span> Clear All History
+              </button>
+            </div>
+          </div>
+
+          <div class="history-list-wrapper glass-card">
+            <div class="history-header">
+              <span class="col-text">Translated Phrase</span>
+              <span class="col-mode">Mode</span>
+              <span class="col-date">Date & Time</span>
+              <span class="col-actions">Actions</span>
+            </div>
+            <div class="history-items-container" id="history-items-list">
+              <!-- Rendered dynamically by app.js -->
+              <div class="no-history-state" id="no-history-placeholder">
+                <span class="material-symbols-rounded placeholder-icon">history_toggle_off</span>
+                <p>No saved translations yet. Translate something and click "Save" in the Translator screen.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 6: SETTINGS -->
+        <section class="content-section" id="sect-settings">
+          <div class="settings-grid">
+            <!-- TTS Options -->
+            <div class="settings-card glass-card">
+              <h3>
+                <span class="material-symbols-rounded text-orange">speech_to_text</span> Text-to-Speech Settings
+              </h3>
+              <div class="form-group">
+                <label for="tts-voice-select">Speech Voice</label>
+                <select id="tts-voice-select" class="form-select">
+                  <!-- Loaded via JS -->
+                </select>
+              </div>
+              <div class="form-group-slider">
+                <div class="slider-header">
+                  <label for="tts-speed">Speech Rate (Speed)</label>
+                  <span class="value-indicator" id="tts-speed-value">1.0x</span>
+                </div>
+                <input type="range" id="tts-speed" min="0.5" max="2" step="0.1" value="1.0" class="form-range">
+              </div>
+              <div class="form-group-slider">
+                <div class="slider-header">
+                  <label for="tts-pitch">Speech Pitch</label>
+                  <span class="value-indicator" id="tts-pitch-value">1.0</span>
+                </div>
+                <input type="range" id="tts-pitch" min="0.5" max="1.5" step="0.1" value="1.0" class="form-range">
+              </div>
+              <button class="btn btn-secondary" id="btn-test-speech">
+                <span class="material-symbols-rounded">play_arrow</span> Test Speech Synthesis
+              </button>
+            </div>
+
+            <!-- Hand Tracking HUD Options -->
+            <div class="settings-card glass-card">
+              <h3>
+                <span class="material-symbols-rounded text-blue">hand_gesture</span> Camera & Tracking
+              </h3>
+              <div class="form-group">
+                <label for="camera-select">Select Input Camera</label>
+                <select id="camera-select" class="form-select">
+                  <option value="user">Default Selfie Camera (Front)</option>
+                  <option value="environment">Back Camera (Main)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <div class="checkbox-container">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="setting-draw-skeleton" checked>
+                    <span class="label-text">Draw Glowing Hand Skeleton Overlay</span>
+                  </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="checkbox-container">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="setting-show-hud" checked>
+                    <span class="label-text">Show Overlay Performance HUD</span>
+                  </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="min-confidence-slider">Min Detection Confidence</label>
+                <div class="slider-header">
+                  <input type="range" id="min-confidence-slider" min="0.3" max="0.9" step="0.05" value="0.5" class="form-range">
+                  <span class="value-indicator" id="min-confidence-value">0.5</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- About and Development Details -->
+            <div class="settings-card glass-card span-2">
+              <h3>
+                <span class="material-symbols-rounded text-indigo">info</span> About SLT Bridge
+              </h3>
+              <p>SLT Bridge is a graduation project proposal under the <strong>College of Science, Department of Computer Science, Kwame Nkrumah University of Science and Technology (KNUST)</strong>.</p>
+              <p>The goal is to provide a zero-dependency, local web-based communication tool that leverages browser machine learning and text-to-speech to make sign language translation cheap, accessible, and fast. Built as a web application, it works directly in browser sandboxes, avoiding complicated app installations.</p>
+              <div class="about-badges">
+                <span class="about-badge">Version 1.0.0 (Web)</span>
+                <span class="about-badge">KNUST Project</span>
+                <span class="about-badge">GSL-Aligned</span>
+                <span class="about-badge">SignTalk-GH Integrated</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Javascript Modules -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "slt-bridge",
+  "version": "1.0.0",
+  "description": "SLT Bridge: Empowering Deaf Voices Through Technology - Real-time Ghanaian Sign Language Translator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "sign-language",
+    "mediapipe",
+    "accessibility",
+    "ghanaian-sign-language",
+    "gsl",
+    "knust"
+  ],
+  "author": "Department of Computer Science, KNUST",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
